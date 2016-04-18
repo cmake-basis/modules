@@ -1,102 +1,120 @@
 # ============================================================================
-# Medical Image Registration ToolKit (MIRTK)
+# Copyright (c) 2011-2012 University of Pennsylvania
+# Copyright (c) 2013-2016 Andreas Schuh
+# All rights reserved.
 #
-# Copyright 2013-2016 Imperial College London
-# Copyright 2013-2016 Andreas Schuh
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# See COPYING file for license information or visit
+# https://cmake-basis.github.io/download.html#license
 # ============================================================================
 
 ##############################################################################
 # @file  CMakeLists.txt
-# @brief Root build configuration file.
-#
-# @sa <a href="http://opensource.andreasschuh.com/cmake-basis">CMake BASIS</a>
+# @brief Build configuration of CMake BASIS Modules.
 ##############################################################################
 
-# ----------------------------------------------------------------------------
-# Minimum required CMake version
-cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
-
-# ----------------------------------------------------------------------------
-# Include BASIS policies, settings, macros, and functions
-set(BASIS_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/Basis")
-set(MIRTK_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules")
-set(CMAKE_MODULE_PATH "${MIRTK_MODULE_PATH}" "${BASIS_MODULE_PATH}")
-
-include(mirtkPolicies NO_POLICY_SCOPE)
-
-include(BasisSettings)
-include(BasisTools)
-include(mirtkTools)
-
-# ----------------------------------------------------------------------------
-# Default settings
-#
-# These variables have to be set before (mirtk|basis)_project_begin.
-# See CMake/Config/Settings.cmake file for other settings.
-
-# By default, require these optional dependencies such that the library
-# features which depend on these external libraries are available
-if (UNIX)
-  set(WITH_ZLIB_DEFAULT ON)
+if (NOT INSTALL_BASIS_MODULES_DIR)
+  return ()
 endif ()
 
-# ThirdParty/Eigen
-if (NOT Eigen3_DIR)
-  if (Eigen3_INCLUDE_DIR)
-    set(Eigen3_DIR "${Eigen3_INCLUDE_DIR}")
-  elseif (EIGEN3_INCLUDE_DIR)
-    set(Eigen3_DIR "${EIGEN3_INCLUDE_DIR}")
-  elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Eigen/signature_of_eigen3_matrix_library")
-    set(Eigen3_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Eigen")
+# ----------------------------------------------------------------------------
+# install files
+set (CMAKE_MODULES
+  # main modules
+  "BasisPack.cmake"               # packaging, wraps CPack
+  "BasisTools.cmake"              # definition of macros and functions
+  "BasisTest.cmake"               # testing, wraps CTest
+  "BasisSettings.cmake"           # default project-independent settings
+  # submodules included by BasisTools.cmake or on demand, respectively
+  "CommonTools.cmake"             # common functions/macros
+  "DirectoriesSettings.cmake"     # project directory structure
+  "DocTools.cmake"                # documentation generation
+  "ExportTools.cmake"             # exporting targets
+  "ExternalData.cmake"            # storing data externally
+  "ExternalData_config.cmake.in"  # config of ExternalData.cmake module
+  "ImportTools.cmake"             # importing targets
+  "InterpTools.cmake"             # script interpreter tools
+  "InstallationTools.cmake"       # software installation
+  "MatlabTools.cmake"             # MATLAB support
+  "ProjectTools.cmake"            # main project/module helpers
+  "RevisionTools.cmake"           # revision control system support
+  "SlicerTools.cmake"             # support build of Slicer Extensions
+  "SuperBuildTools.cmake"         # super-build related functions
+  "TargetTools.cmake"             # addition of build target
+  "TopologicalSort.cmake"         # topological sorting of build dependencies
+  "UtilitiesTools.cmake"          # generation/configuration of utilities
+)
+
+# ----------------------------------------------------------------------------
+# auxiliary files
+set (CMAKE_MODULES_AUXILIARY_FILES
+  # API documentation
+  "Doxyfile.in"                         # default Doxygen configuration template
+  "Modules.dox"                         # documentation of BASIS modules groups
+  "Utilities.dox"                       # documentation of BASIS Utilities group
+  "CxxUtilities.dox"                    # documentation of C++ Utilities group
+  "JavaUtilities.dox"                   # documentation of Java Utilities group
+  "PythonUtilities.dox"                 # documentation of Python Utilities group
+  "PerlUtilities.dox"                   # documentation of Perl Utilities group
+  "BashUtilities.dox"                   # documentation of BASH Utilities group
+  "MatlabUtilities.dox"                 # documentation of MATLAB Utilities group
+  # package configuration
+  "Config.cmake.in"                     # default <Pkg>Config.cmake template
+  "ModuleConfig.cmake.in"               # default <Pkg>Config.cmake template for modules
+  "BasisConfigSettings.cmake"           # settings for default <Pkg>Config.cmake
+  "ConfigVersion.cmake.in"              # default <Pkg>ConfigVersion.cmake template
+  "ConfigUse.cmake.in"                  # default <Pkg>Use.cmake template
+  "ModuleConfigUse.cmake.in"            # default <Pkg>Use.cmake template for modules
+  "GenerateConfig.cmake"                # generation/configuration of <Pkg>Config.cmake et al.
+  # documentation generation
+  "doxygen_header.html.in"              # default HTML header of Doxygen documentation
+  "doxygen_footer.html.in"              # default HTML footer of Doxygen documentation
+  "doxygen_extra.css.in"                # default HTML extra stylesheet of Doxygen documentation
+  "sphinx_conf.py.in"                   # default Sphinx configuration
+  "sphinx_make.sh.in"                   # custom "make" script for PDF generation
+  # other
+  "buildtimestamp.cmd"                  # get build timestamp on Windows
+  "CheckPublicHeaders.cmake"            # check if header files were added/removed
+  "cmake_uninstall.cmake.in"            # uninstall script
+  "configure_script.cmake.in"           # used to configure ("build") script files
+  "ConfigureIncludeFiles.cmake"         # used to configure public header files
+  "Directories.cmake.in"                # documents project directory structure
+  "doxyfilter.bat.in"                   # wraps Doxygen filter command on Windows
+  "ExecuteProcess.cmake"                # wraps CMake's execute_process() function
+  "generate_matlab_executable.cmake.in" # build command for alternative build of MCC targets
+  "GenerateExportHeader.cmake"          # GenerateExportHeader module of CMake 3.6
+  "exportheader.cmake.in"               # template header file used by GenerateExportHeader
+  "get_python_lib.py"                   # auxiliary script to determine site-packages directory
+  "glob.cmake"                          # used to glob for source files
+  "ScriptConfig.cmake.in"               # default script configuration file
+  "PostprocessChangeLog.cmake"          # used to postprocess generated ChangeLog
+  "ProjectSettings.cmake.in"            # default project-dependent settings
+)
+
+basis_install (
+  FILES       ${CMAKE_MODULES} ${CMAKE_MODULES_AUXILIARY_FILES}
+  DESTINATION "${INSTALL_BASIS_MODULES_DIR}"
+)
+
+# Attention: DO NOT add the uninstall subdirectory here! Instead, the
+#            CMakeLists.txt file is installed in a separate directory.
+#            This directory is added to the build configuration of each
+#            BASIS project (including BASIS) at the end of basis_project_end().
+basis_install (
+  FILES       "uninstall/CMakeLists.txt"
+  DESTINATION "${INSTALL_BASIS_MODULES_DIR}/uninstall"
+)
+
+# ----------------------------------------------------------------------------
+# make sure that we did not forget to install a file... very easy to forget!
+file (GLOB MODULES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *)
+foreach (F IN LISTS MODULES)
+  if (NOT F MATCHES "^(CMakeLists\\.txt|COPYING\\.txt|README\\.md|\\..*|.*\\.bak|.*\\.autosave|.*\\.pyc|.*~|uninstall)$")
+    list (FIND CMAKE_MODULES "${F}" IDX)
+    if (IDX EQUAL -1)
+      list (FIND CMAKE_MODULES_AUXILIARY_FILES "${F}" IDX)
+    endif ()
+    if (IDX EQUAL -1)
+      message (WARNING "Seems like ${CMAKE_CURRENT_SOURCE_DIR}/${F} will not be installed!")
+    endif ()
   endif ()
-endif ()
-
-# ThirdParty/Boost
-if (NOT Boost_DIR)
-  if (BOOST_INCLUDEDIR)
-    set(Boost_DIR "${BOOST_INCLUDEDIR}")
-  elseif (BOOST_ROOT)
-    set(Boost_DIR "${BOOST_ROOT}/include")
-  elseif (BOOSTROOT)
-    set(Boost_DIR "${BOOSTROOT}/include")
-  elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost/boost/version.hpp")
-    set(Boost_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost")
-  endif ()
-endif ()
-
-# ----------------------------------------------------------------------------
-# Configure build system
-
-# Initialize project
-mirtk_project_begin()
-
-# Reset global properties used to collect information about MIRTK commands
-# and the LD_LIBRARY_PATH of external libraries required by these
-set_property(GLOBAL PROPERTY MIRTK_COMMANDS     "")
-set_property(GLOBAL PROPERTY MIRTK_LIBRARY_PATH "")
-
-# Process modules
-foreach (MODULE IN LISTS PROJECT_MODULES_ENABLED)
-  basis_add_module(${MODULE})
-  basis_use_module(${MODULE})
 endforeach ()
-
-# Process subdirectories
-foreach (SUBDIR IN LISTS PROJECT_SUBDIRS)
-  basis_add_subdirectory(${SUBDIR})
-endforeach ()
-
-# Finalize project
-mirtk_project_end()
